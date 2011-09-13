@@ -3437,9 +3437,9 @@ TableLookupOscillator.prototype.generate = function(inputBuffers,
             frequency = frequencyChannel[i];
         }
         var step = frequency * tableSize / sampleRate;
-        phase += step + tableSize; // javascript % doesn't behave consistently 
+        phase += step;
         if (phase >= tableSize) {
-            phase %= tableSize;
+            phase = ((phase%tableSize)+tableSize)%tableSize; // javascript % doesn't behave consistently 
         }
         channel[i] = table[Math.floor(phase)];
     }
