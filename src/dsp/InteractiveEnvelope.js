@@ -30,7 +30,6 @@ var InteractiveEnvelope = function(audiolet, initial, trigger,
     this.onComplete=onComplete;
     this.trigger=trigger;
     AudioletNode.call(this, audiolet, 0, 1);
-//    Envelope.call(this, audiolet, gate, levels, times, null, onComplete);
 };
 
 extend(InteractiveEnvelope, AudioletNode);

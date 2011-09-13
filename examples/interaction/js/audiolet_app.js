@@ -4,20 +4,21 @@ window.onload = function() {
 
     var play=function(f) {
 	var X=new Object();
-        X.sine = new Sine(this.audiolet, 0);
+        X.sine = new Sine(this.audiolet,f);
 
-        X.modulator = new Sine(this.audiolet, f*2.33);
-        X.modulatorMulAdd = new MulAdd(this.audiolet, 50, f);
-        X.modulator.connect(X.modulatorMulAdd);
-        X.modulatorMulAdd.connect(X.sine);
+        X.modulator = new Sine(this.audiolet, f);
 
-	X.modulator2 = new Multiply(this.audiolet, 1);
-	X.sine.connect(X.modulator2,0,0);
+	X.modulator_op = new MulAdd(this.audiolet,f/4,f);
+	X.modulator.connect(X.modulator_op,0,0);
+	X.modulator_op.connect(X.sine);
 
-	X.envelope = new InteractiveEnvelope(this.audiolet,0.1,1e-10,function () { X.modulator2.remove();});
+	X.amplitude = new Multiply(this.audiolet, 1);
+	X.sine.connect(X.amplitude);
 
-	X.envelope.connect(X.modulator2,0,1);
-	X.modulator2.connect(this.audiolet.output);
+	X.envelope = new InteractiveEnvelope(this.audiolet,0.1,1e-10,function () { X.amplitude.remove();});
+
+	X.envelope.connect(X.amplitude,0,1);
+	X.amplitude.connect(this.audiolet.output);
 
 	X.envelope.newTarget(0.02,1e-5);
 	return X;
