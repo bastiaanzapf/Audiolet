@@ -23,13 +23,12 @@ function Blit(P,M,odd) {
 	throw "Too many Partials in Blit.";
     }
     return function(n) {
-	var t=Math.PI*n/P;
-	var x=t*M;
-	n++;
-	if (Math.abs(Math.sin(t) > 1e-5))
+	var x=Math.PI*M*n/P;
+	var t=x/M;
+	if (Math.abs(Math.sin(t)) > 1e-5)
 	    return Math.sin(x)/(P*Math.sin(t));
 	else
-	    return M*Math.cos(x)/(P*Math.cos(t));
+	    return M/P*Math.cos(x)/(Math.cos(t));
     }
 };
     
@@ -55,12 +54,15 @@ BlitSquare = function(audiolet,frequency) {
     AudioletNode.call(this, audiolet, 0, 1);
     this.frequency = frequency || 440;    
     this.phase = 0;
-    P=(44100/frequency);
+    P=(44100.0/frequency);
+    console.log(P);
     M=P;
     M=(Math.floor(M/2)*2); // even number, lower than the original M
+    //M=8;
+    //    M=16;
     this.Blit=Blit(P,M,0);
 
-    this.filter=new FixedBiquadFilter(audiolet,[0.1,0,0],[1,-0.9999999,0]);
+    this.filter=new FixedBiquadFilter(audiolet,[1,0,0],[1,-0.9999,0]);
     this.connect(this.filter);
     return this.filter;
 };

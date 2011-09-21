@@ -16,6 +16,9 @@ window.onload = function() {
 	    X.osci = new Oscilloscope(this.audiolet,undefined,canvas);
 	    X.amplitude.connect(X.osci);
 	    X.osci.connect(this.audiolet.output);
+	    X.osci.raf=function () { window.mozRequestAnimationFrame(function () {X.osci.paint();},canvas); };
+            X.osci.paint();
+	    
 	} else {
 	    X.amplitude.connect(this.audiolet.output);
 	}

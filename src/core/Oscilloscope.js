@@ -8,6 +8,7 @@
  *
  * **Outputs**
  *
+ * - Unmodified Signal (necessary, since Audiolet uses a "pull" architecture)
  *
  * **Parameters**
  *
@@ -26,8 +27,9 @@ var Oscilloscope = function(audiolet,signal,canvas) {
     this.gc = canvas.getContext('2d');
     this.width = canvas.width;
     this.height = canvas.height;
-    this.hold = false;
-    this.wait = 0;
+    this.displayeddata = Array();
+    this.displayedpointer = 0;
+    this.count=0;
 };
 
 extend(Oscilloscope, AudioletNode);
@@ -35,24 +37,31 @@ extend(Oscilloscope, AudioletNode);
 Oscilloscope.prototype.generate = function(inputBuffers,outputBuffers) {
     var c=inputBuffers[0].getChannelData(0);
     var o=outputBuffers[0].getChannelData(0);
+    for (var i=0;i<c.length;i++) {
+	if (this.displayedpointer<=this.width) {
+	    this.displayeddata[this.displayedpointer++]=c[i];
+	}
+	o[i]=c[i];
+    }    
+};
+
+Oscilloscope.prototype.paint = function () {
     var width=this.width,height=this.height,gc=this.gc;
+    var factor=1;
     var h2=height/2;
-    if (!this.hold) {
-	this.canvas.width=width;
+    if (this.displayedpointer>this.width) {
+	this.canvas.width=this.width;
 	gc.fillStyle='#ffffff';
 	gc.strokeStyle='#000000';
 	gc.beginPath();
-	gc.moveTo(0,c[0]*h2+h2);
+	gc.moveTo(0,this.displayeddata[0]*h2*factor+h2);
+	for (var i=0;i<this.displayedpointer;i++) {
+	    gc.lineTo(i,this.displayeddata[i]*h2*factor+h2);
+	}
+	gc.stroke();	
+	this.displayedpointer=0;
+	this.count++;
     }
-    for (var i=0;i<c.length;i++) {
-	if (!this.hold) 
-	    if (i<width)
-		gc.lineTo(i,c[i]*h2/10+h2);	
-	o[i]=c[i];
-    }
-    if (!this.hold) {
-	gc.stroke();
-	if ((this.wait++)>1)
-	    this.hold=true;
-    }
+    if (this.count<5)
+	  this.raf();
 }
