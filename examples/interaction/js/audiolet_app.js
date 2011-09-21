@@ -15,7 +15,7 @@ window.onload = function() {
 	X.amplitude = new Multiply(this.audiolet, 1);
 	X.sine.connect(X.amplitude);
 
-	X.envelope = new InteractiveEnvelope(this.audiolet,0.1,1e-10,function () { X.amplitude.remove();});
+	X.envelope = new InteractiveEnvelope(this.audiolet,0.1,1e-10,function () { X.amplitude.remove(); delete X; });
 
 	X.envelope.connect(X.amplitude,0,1);
 	X.amplitude.connect(this.audiolet.output);
@@ -44,15 +44,16 @@ window.onload = function() {
 
     this.playing_notes=Array();
 
-    window.onkeydown=function(e) {
+    window.onkeydown=function(e) {       
 	if ((f=this.keyboard[e.keyCode])!=null) {	    
 	    if (playing_notes[e.keyCode]==null) {
+		f*=Math.pow(2,document.getElementById('octave').value);
 		var p=new Object();
-		p.play=play(this.keyboard[e.keyCode]);
+		p.play=play(f);
 		playing_notes[e.keyCode]=p;
 		var kc=e.keyCode;
 		p.marker=kc;
-		p.switchOff=function() { p.play.envelope.newTarget(0,2e-1); playing_notes[kc]=null;}
+		p.switchOff=function() { p.play.envelope.newTarget(0,2e-2); playing_notes[kc]=null;}
 	    }
 	}
     }
