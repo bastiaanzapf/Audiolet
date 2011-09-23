@@ -1,6 +1,6 @@
 
 /**
- * BLIT closed formula, cf.
+ * Bandlimited impulse train closed formula, cf.
  * http://www.music.mcgill.ca/~gary/307/week5/bandlimited.html
  *
  * It is possible to synthesize a sign-alternating impulse train
@@ -55,12 +55,14 @@ BlitSquare = function(audiolet,frequency) {
     this.frequency = frequency || 440;    
     this.phase = 0;
     P=(44100.0/frequency);
-    console.log(P);
-    M=P;
-    M=(Math.floor(M/2)*2); // even number, lower than the original M
-    //M=8;
-    //    M=16;
+
+    M=Math.floor(P/2)*2; // even number, lower than the original P
+
+    // bipolar BLIT
+
     this.Blit=Blit(P,M,0);
+
+    // a leaky integrator -> process bipolar BLIT to square wave
 
     this.filter=new FixedBiquadFilter(audiolet,[1,0,0],[1,-0.9999,0]);
     this.connect(this.filter);
@@ -68,7 +70,6 @@ BlitSquare = function(audiolet,frequency) {
 };
 
 extend(BlitSquare, AudioletNode);
-
 
 BlitSquare.prototype.generate = function(inputBuffers,
                                          outputBuffers) {
@@ -90,4 +91,6 @@ BlitSquare.prototype.generate = function(inputBuffers,
 BlitSquare.prototype.toString = function() {
     return 'BlitSquare';
 };
+
+
 
