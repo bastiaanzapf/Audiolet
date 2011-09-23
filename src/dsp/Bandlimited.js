@@ -56,13 +56,13 @@ BlitSquare = function(audiolet,frequency) {
     this.phase = 0;
     P=(44100.0/frequency);
 
-    M=Math.floor(P/2)*2; // even number, lower than the original P
+    M=Math.floor(P/2)*2; // even number of harmonics, lower than the original P
 
     // bipolar BLIT
 
     this.Blit=Blit(P,M,0);
 
-    // a leaky integrator -> process bipolar BLIT to square wave
+    // leaky integrator - bipolar BLIT to square wave
 
     this.filter=new FixedBiquadFilter(audiolet,[1,0,0],[1,-0.9999,0]);
     this.connect(this.filter);
@@ -94,3 +94,69 @@ BlitSquare.prototype.toString = function() {
 
 
 
+/**
+ * Bandlimited Saw Wave Generator
+ *
+ * **Inputs**
+ *
+ * none (frequency modulation is hard to get right with the closed formula above)
+ *
+ * **Outputs**
+ *
+ * - Bandlimited Saw Wave
+ *
+ * **Parameters**
+ *
+ * @constructor
+ * @param {Audiolet} audiolet The audiolet object.
+ * @param {Number} [frequency=440] Frequency.
+ */
+
+BlitSaw = function(audiolet,frequency) {
+    AudioletNode.call(this, audiolet, 0, 1);
+    this.frequency = frequency || 440;    
+    this.phase = 0;
+    P=(44100.0/frequency);
+
+    M=Math.floor(P/2-1)*2+1; // odd number of harmonics, lower than the original P
+
+    // unipolar BLIT
+
+    this.Blit=Blit(P,M,1);
+    this.P=P;
+
+    // offset 1/2 - integral (DC part) of signal will be 0
+
+    this.add=new Add(audiolet,(-1/P));
+    this.connect(this.add);
+
+    // leaky integrator - offset BLIT to saw wave
+
+    this.filter=new FixedBiquadFilter(audiolet,[1,0,0],[1,-0.9999,0]);
+    this.add.connect(this.filter);
+
+    return this.filter;
+};
+
+extend(BlitSaw, AudioletNode);
+
+BlitSaw.prototype.generate = function(inputBuffers,
+				      outputBuffers) {
+    var buffer = outputBuffers[0];
+    var channel = buffer.getChannelData(0);
+
+    var bufferLength = buffer.length;    
+    for (var i = 0; i < bufferLength; i++) {
+        channel[i] = this.Blit(this.phase++);	
+    }
+};
+
+
+/**
+ * toString
+ *
+ * @return {String} String representation.
+ */
+BlitSaw.prototype.toString = function() {
+    return 'BlitSaw';
+};

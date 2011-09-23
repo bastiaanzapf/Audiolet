@@ -4,7 +4,7 @@ window.onload = function() {
 
     var play=function(f,canvas) {
 	var X=new Object();
-        X.square = new BlitSquare(this.audiolet,f);
+        X.square = new BlitSaw(this.audiolet,f);
 
 	X.amplitude = new Multiply(this.audiolet, 1);
 	X.square.connect(X.amplitude);
