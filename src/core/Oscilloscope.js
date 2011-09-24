@@ -47,7 +47,7 @@ Oscilloscope.prototype.generate = function(inputBuffers,outputBuffers) {
 
 Oscilloscope.prototype.paint = function () {
     var width=this.width,height=this.height,gc=this.gc;
-    var factor=1;
+    var factor=10;
     var h2=height/2;
     if (this.displayedpointer>this.width) {
 	this.canvas.width=this.width;
@@ -62,6 +62,6 @@ Oscilloscope.prototype.paint = function () {
 	this.displayedpointer=0;
 	this.count++;
     }
-    if (this.count<5)
+    if (this.count<0)
 	  this.raf();
 }

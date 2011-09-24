@@ -4,12 +4,17 @@ window.onload = function() {
 
     var play=function(f,canvas) {
 	var X=new Object();
-        X.square = new BlitSaw(this.audiolet,f);
+        X.square = new BlitSquare(this.audiolet,f);
+        X.saw = new BlitSaw(this.audiolet,f);        
+	X.tri = new BlitTri(this.audiolet,f);
 
 	X.amplitude = new Multiply(this.audiolet, 1);
-	X.square.connect(X.amplitude);
+	//	X.square.connect(X.amplitude);
+	//	X.saw.connect(X.amplitude);
+	X.tri.connect(X.amplitude);
 
-	X.envelope = new InteractiveEnvelope(this.audiolet,0.1,1e-10,function () { X.amplitude.remove(); delete X; });
+	X.envelope = new InteractiveEnvelope(this.audiolet,0.5,1e-10,function () { X.amplitude.remove(); delete X; }); // Don't have a clue if this is sufficient to prevent mem leaks
+
 	X.envelope.connect(X.amplitude,0,1);
 
 	if (canvas) {
@@ -17,18 +22,19 @@ window.onload = function() {
 	    X.amplitude.connect(X.osci);
 	    X.osci.connect(this.audiolet.output);
 	    X.osci.raf=function () { window.mozRequestAnimationFrame(function () {X.osci.paint();},canvas); };
+	    //	    window.setTimeout(X.osci.raf,300);
             X.osci.paint();
 	    
 	} else {
 	    X.amplitude.connect(this.audiolet.output);
 	}
-	X.envelope.newTarget(0.02,1e-5);
+	X.envelope.newTarget(0.002,1e-5);
 
 	return X;
     }
 
-    x=play(440,document.getElementById('scope'));
-    window.setTimeout(function () { x.envelope.newTarget(0,2e-2); },200);
+    //    x=play(220,document.getElementById('scope'));
+    //    window.setTimeout(function () { x.envelope.newTarget(0,2e-2); },200);
 
     function keyboard() {
 	var keyboard_scale=[89,83,88,68,67,86,71,66,72,78,74,77,
@@ -56,7 +62,7 @@ window.onload = function() {
 		playing_notes[e.keyCode]=p;
 		var kc=e.keyCode;
 		p.marker=kc;
-		p.switchOff=function() { p.play.envelope.newTarget(0,2e-2); playing_notes[kc]=null;}
+		p.switchOff=function() { p.play.envelope.newTarget(0,2e-4); playing_notes[kc]=null;}
 	    }
 	}
     }

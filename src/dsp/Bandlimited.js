@@ -62,7 +62,7 @@ BlitSquare = function(audiolet,frequency) {
 
     this.Blit=Blit(P,M,0);
 
-    // leaky integrator - bipolar BLIT to square wave
+    // initialize integrator storage
 
     this.store=0;
 };
@@ -157,3 +157,88 @@ BlitSaw.prototype.generate = function(inputBuffers,
 BlitSaw.prototype.toString = function() {
     return 'BlitSaw';
 };
+
+
+/**
+ * Bandlimited Triangle Wave Generator
+ *
+ * **Inputs**
+ *
+ * none (frequency modulation is hard to get right with the closed formula above)
+ *
+ * **Outputs**
+ *
+ * - Bandlimited Triangle Wave
+ *
+ * **Parameters**
+ *
+ * @constructor
+ * @param {Audiolet} audiolet The audiolet object.
+ * @param {Number} [frequency=440] Frequency.
+ */
+
+
+BlitTri = function(audiolet,frequency) {
+    AudioletNode.call(this, audiolet, 0, 1);
+    this.frequency = frequency || 440;    
+    P=(44100.0/frequency)/2; // double "frequency" for square wave - see source mentioned in header
+
+    this.phase = P/2;
+
+    M=Math.floor(P/2)*2; // even number of harmonics, lower than the original P
+
+    // bipolar BLIT
+    this.Period=P;
+    this.Blit=Blit(P,M,0);
+
+    // initialize integrator storage
+
+    this.store=Array();
+    this.store[0]=0;
+    this.store[1]=0;
+    this.store[2]=0;
+    this.overflow=false;
+    this.count=0;
+    this.offset=0.5/P;
+    console.log("Tri!");
+};
+
+extend(BlitTri, AudioletNode);
+
+BlitTri.prototype.generate = function(inputBuffers,
+				      outputBuffers) {
+    var buffer = outputBuffers[0];
+    var channel = buffer.getChannelData(0);
+
+    var bufferLength = buffer.length;
+    
+    var frequency=1/this.Period;
+    var frequency2=0.5/this.Period;
+    for (var i = 0; i < bufferLength; i++) {
+	var blit=this.Blit(1+this.phase++);
+	this.store[0] += blit*frequency;
+	this.store[0] *= 0.9999;
+	this.offset *= 0.9999;
+	this.store[1] += (this.store[0]+this.offset);
+	this.store[1] *= 0.999;
+        channel[i] = this.store[1];
+    }
+    if (!this.overflow) {
+	if (Math.abs(channel[0])>2) {
+	    this.overflow=true;
+	    console.log("0 "+this.store[0]);
+	    console.log("1 "+this.store[1]);
+	}
+    }
+};
+
+
+/**
+ * toString
+ *
+ * @return {String} String representation.
+ */
+BlitTri.prototype.toString = function() {
+    return 'BlitTri';
+};
+
