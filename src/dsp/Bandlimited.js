@@ -54,7 +54,7 @@ BlitSquare = function(audiolet,frequency) {
     AudioletNode.call(this, audiolet, 0, 1);
     this.frequency = frequency || 440;    
     this.phase = 0;
-    P=(44100.0/frequency);
+    P=(44100.0/frequency)/2; // double "frequency" for square wave - see source mentioned in header
 
     M=Math.floor(P/2)*2; // even number of harmonics, lower than the original P
 
