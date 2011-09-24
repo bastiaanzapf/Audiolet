@@ -64,9 +64,7 @@ BlitSquare = function(audiolet,frequency) {
 
     // leaky integrator - bipolar BLIT to square wave
 
-    this.filter=new FixedBiquadFilter(audiolet,[1,0,0],[1,-0.9999,0]);
-    this.connect(this.filter);
-    return this.filter;
+    this.store=0;
 };
 
 extend(BlitSquare, AudioletNode);
@@ -78,7 +76,10 @@ BlitSquare.prototype.generate = function(inputBuffers,
 
     var bufferLength = buffer.length;    
     for (var i = 0; i < bufferLength; i++) {
-        channel[i] = this.Blit(this.phase++);	
+	var blit=this.Blit(this.phase++);
+        channel[i] = blit+this.store;
+	this.store += blit;
+	this.store *= 0.9999;
     }
 };
 
@@ -127,15 +128,8 @@ BlitSaw = function(audiolet,frequency) {
 
     // offset 1/2 - integral (DC part) of signal will be 0
 
-    this.add=new Add(audiolet,(-1/P));
-    this.connect(this.add);
-
-    // leaky integrator - offset BLIT to saw wave
-
-    this.filter=new FixedBiquadFilter(audiolet,[1,0,0],[1,-0.9999,0]);
-    this.add.connect(this.filter);
-
-    return this.filter;
+    this.offset=-1/P;
+    this.store=0;
 };
 
 extend(BlitSaw, AudioletNode);
@@ -147,7 +141,10 @@ BlitSaw.prototype.generate = function(inputBuffers,
 
     var bufferLength = buffer.length;    
     for (var i = 0; i < bufferLength; i++) {
-        channel[i] = this.Blit(this.phase++);	
+	var blit= this.Blit(this.phase++)+this.offset;
+        channel[i] = blit+this.store;
+	this.store += blit;
+	this.store *= 0.9999;
     }
 };
 
