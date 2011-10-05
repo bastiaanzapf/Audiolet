@@ -4,9 +4,9 @@ window.onload = function() {
 
     var play=function(f,canvas) {
 	var X=new Object();
-        X.square = new BlitSquare(this.audiolet,f);
-        X.saw = new BlitSaw(this.audiolet,f);        
-	X.tri = new BlitTri(this.audiolet,f);
+        X.square = new BandlimitedSquare(this.audiolet,f);
+        X.saw = new BandlimitedSaw(this.audiolet,f);        
+	X.tri = new BandlimitedTriangle(this.audiolet,f);
 
 	X.amplitude = new Multiply(this.audiolet, 1);
 	//	X.square.connect(X.amplitude);

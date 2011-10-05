@@ -14,13 +14,13 @@
  * @returns a function that will calculate a Bandlimited impulse train
  *          depending on a time parameter
  */
-function Blit(P,M,odd) {
+function BandlimitedImpulseTrain(P,M,odd) {
     if ((odd && (M%2!=1)) ||
 	(!odd && (M%2!=0))) {
-	throw "Erroneous Number of Partials in Blit.";
+	throw "Erroneous Number of Partials in BandlimitedImpulseTrain.";
     }
     if (M>P) {
-	throw "Too many Partials in Blit.";
+	throw "Too many Partials in BandlimitedImpulseTrain.";
     }
     return function(n) {
 	var x=Math.PI*M*n/P;
@@ -50,7 +50,7 @@ function Blit(P,M,odd) {
  * @param {Number} [frequency=440] Frequency.
  */
 
-BlitSquare = function(audiolet,frequency) {
+BandlimitedSquare = function(audiolet,frequency) {
     AudioletNode.call(this, audiolet, 0, 1);
     this.frequency = frequency || 440;    
     this.phase = 0;
@@ -60,23 +60,23 @@ BlitSquare = function(audiolet,frequency) {
 
     // bipolar BLIT
 
-    this.Blit=Blit(P,M,0);
+    this.BandlimitedImpulseTrain=BandlimitedImpulseTrain(P,M,0);
 
     // initialize integrator storage
 
     this.store=0;
 };
 
-extend(BlitSquare, AudioletNode);
+extend(BandlimitedSquare, AudioletNode);
 
-BlitSquare.prototype.generate = function(inputBuffers,
+BandlimitedSquare.prototype.generate = function(inputBuffers,
                                          outputBuffers) {
     var buffer = outputBuffers[0];
     var channel = buffer.getChannelData(0);
 
     var bufferLength = buffer.length;    
     for (var i = 0; i < bufferLength; i++) {
-	var blit=this.Blit(this.phase++);
+	var blit=this.BandlimitedImpulseTrain(this.phase++);
         channel[i] = blit+this.store;
 	this.store += blit;
 	this.store *= 0.9999;
@@ -89,8 +89,8 @@ BlitSquare.prototype.generate = function(inputBuffers,
  *
  * @return {String} String representation.
  */
-BlitSquare.prototype.toString = function() {
-    return 'BlitSquare';
+BandlimitedSquare.prototype.toString = function() {
+    return 'BandlimitedSquare';
 };
 
 
@@ -113,7 +113,7 @@ BlitSquare.prototype.toString = function() {
  * @param {Number} [frequency=440] Frequency.
  */
 
-BlitSaw = function(audiolet,frequency) {
+BandlimitedSaw = function(audiolet,frequency) {
     AudioletNode.call(this, audiolet, 0, 1);
     this.frequency = frequency || 440;    
     this.phase = 0;
@@ -123,7 +123,7 @@ BlitSaw = function(audiolet,frequency) {
 
     // unipolar BLIT
 
-    this.Blit=Blit(P,M,1);
+    this.BandlimitedImpulseTrain=BandlimitedImpulseTrain(P,M,1);
     this.P=P;
 
     // offset 1/2 - integral (DC part) of signal will be 0
@@ -132,16 +132,16 @@ BlitSaw = function(audiolet,frequency) {
     this.store=0;
 };
 
-extend(BlitSaw, AudioletNode);
+extend(BandlimitedSaw, AudioletNode);
 
-BlitSaw.prototype.generate = function(inputBuffers,
+BandlimitedSaw.prototype.generate = function(inputBuffers,
 				      outputBuffers) {
     var buffer = outputBuffers[0];
     var channel = buffer.getChannelData(0);
 
     var bufferLength = buffer.length;    
     for (var i = 0; i < bufferLength; i++) {
-	var blit= this.Blit(this.phase++)+this.offset;
+	var blit= this.BandlimitedImpulseTrain(this.phase++)+this.offset;
         channel[i] = blit+this.store;
 	this.store += blit;
 	this.store *= 0.9999;
@@ -154,8 +154,8 @@ BlitSaw.prototype.generate = function(inputBuffers,
  *
  * @return {String} String representation.
  */
-BlitSaw.prototype.toString = function() {
-    return 'BlitSaw';
+BandlimitedSaw.prototype.toString = function() {
+    return 'BandlimitedSaw';
 };
 
 
@@ -178,7 +178,7 @@ BlitSaw.prototype.toString = function() {
  */
 
 
-BlitTri = function(audiolet,frequency) {
+BandlimitedTriangle = function(audiolet,frequency) {
     AudioletNode.call(this, audiolet, 0, 1);
     this.frequency = frequency || 440;    
     P=(44100.0/frequency)/2; // double "frequency" for square wave - see source mentioned in header
@@ -189,7 +189,7 @@ BlitTri = function(audiolet,frequency) {
 
     // bipolar BLIT
     this.Period=P;
-    this.Blit=Blit(P,M,0);
+    this.BandlimitedImpulseTrain=BandlimitedImpulseTrain(P,M,0);
 
     // initialize integrator storage
 
@@ -203,9 +203,9 @@ BlitTri = function(audiolet,frequency) {
     console.log("Tri!");
 };
 
-extend(BlitTri, AudioletNode);
+extend(BandlimitedTriangle, AudioletNode);
 
-BlitTri.prototype.generate = function(inputBuffers,
+BandlimitedTriangle.prototype.generate = function(inputBuffers,
 				      outputBuffers) {
     var buffer = outputBuffers[0];
     var channel = buffer.getChannelData(0);
@@ -215,7 +215,7 @@ BlitTri.prototype.generate = function(inputBuffers,
     var frequency=1/this.Period;
     var frequency2=0.5/this.Period;
     for (var i = 0; i < bufferLength; i++) {
-	var blit=this.Blit(1+this.phase++);
+	var blit=this.BandlimitedImpulseTrain(1+this.phase++);
 	this.store[0] += blit*frequency;
 	this.store[0] *= 0.9999;
 	this.offset *= 0.9999;
@@ -238,7 +238,7 @@ BlitTri.prototype.generate = function(inputBuffers,
  *
  * @return {String} String representation.
  */
-BlitTri.prototype.toString = function() {
-    return 'BlitTri';
+BandlimitedTriangle.prototype.toString = function() {
+    return 'BandlimitedTriangle';
 };
 
